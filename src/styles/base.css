@@ -1,0 +1,64 @@
+/* Page highlights lie below the panels, whose z-index is set by the panel stack; the tray lies above them. */
+.kp-highlight { position: fixed; z-index: calc(var(--kp-z-panel-base) - 1); pointer-events: none; box-sizing: border-box;
+    border: 2px solid var(--kp-accent); background: color-mix(in srgb, var(--kp-accent) 15%, transparent); display: none; }
+
+.kp-panel { position: fixed; z-index: var(--kp-z-panel-base); display: none; flex-direction: column; box-sizing: border-box;
+    width: var(--kp-panel-width); max-width: calc(100vw - 16px); overflow: hidden; border-radius: var(--kp-radius);
+    border: 1px solid var(--kp-border-strong); background: var(--kp-bg); color: var(--kp-fg); font: var(--kp-font);
+    box-shadow: var(--kp-shadow); }
+.kp-panel.kp-open { display: flex; }
+.kp-header { flex: none; padding: 8px; background: var(--kp-bg); border-bottom: 1px solid var(--kp-border);
+    cursor: move; user-select: none; touch-action: none; }
+.kp-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 8px; }
+.kp-title { font-weight: bold; }
+.kp-resize { position: absolute; right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; touch-action: none;
+    background: linear-gradient(135deg, transparent 50%, var(--kp-border-strong) 50%, var(--kp-border-strong) 58%, transparent 58%,
+    transparent 72%, var(--kp-border-strong) 72%, var(--kp-border-strong) 80%, transparent 80%); }
+
+.kp-panel.kp-collapsed { height: auto !important; min-height: 0 !important; }
+.kp-panel.kp-collapsed > :not(.kp-header) { display: none !important; }
+.kp-panel.kp-collapsed .kp-header { border-bottom: none; }
+
+.kp-panel.kp-fullscreen { left: 0 !important; top: 0 !important; right: auto !important; width: 100vw !important; height: 100vh !important;
+    max-width: none !important; max-height: none !important; border: none; border-radius: 0;
+    background: color-mix(in srgb, var(--kp-bg) 86%, transparent); backdrop-filter: blur(2px); }
+.kp-fullscreen .kp-header { background: transparent; cursor: default; }
+
+.kp-panel.kp-docked-left, .kp-panel.kp-docked-right { top: 0 !important; height: 100vh !important; max-height: none !important;
+    border-top: none; border-bottom: none; border-radius: 0; }
+.kp-panel.kp-docked-left { left: 0 !important; right: auto !important; }
+.kp-panel.kp-docked-right { right: 0 !important; left: auto !important; }
+.kp-docked-left .kp-header, .kp-docked-right .kp-header { cursor: default; }
+.kp-fullscreen > .kp-resize, .kp-collapsed > .kp-resize, .kp-docked-left > .kp-resize, .kp-docked-right > .kp-resize { display: none; }
+
+.kp-row { display: flex; align-items: center; gap: 4px; }
+.kp-row + .kp-row { margin-top: 6px; }
+.kp-section + .kp-section { margin-top: 6px; border-top: 1px solid var(--kp-border); }
+.kp-spacer { flex: 1; }
+.kp-btn { background: var(--kp-border); color: inherit; border: 1px solid var(--kp-border-strong); border-radius: 3px; padding: 1px 6px;
+    font: inherit; cursor: pointer; }
+.kp-btn:hover:not(:disabled) { background: var(--kp-border-strong); }
+.kp-btn:disabled { opacity: 0.4; cursor: default; }
+.kp-btn.kp-on { background: var(--kp-accent); color: var(--kp-accent-fg); border-color: var(--kp-accent); }
+.kp-mini { padding: 0 4px; font-size: 11px; line-height: 1.3; }
+.kp-link { cursor: pointer; text-decoration: underline dotted; }
+.kp-link:hover { color: #fff; }
+.kp-muted { color: var(--kp-muted); }
+.kp-badge { background: color-mix(in srgb, var(--kp-info) 40%, var(--kp-bg)); color: #fff; border-radius: 3px; padding: 0 4px; font-size: 10px; }
+.kp-ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kp-input { flex: 1; min-width: 0; background: var(--kp-border); color: inherit; border: 1px solid var(--kp-border-strong);
+    border-radius: 3px; padding: 2px 6px; font: inherit; user-select: text; }
+.kp-input:focus { outline: none; border-color: var(--kp-accent); }
+
+/* Collapsible blocks. */
+.kp-dir { padding: 3px 0; }
+.kp-dir + .kp-dir { border-top: 1px solid var(--kp-border); }
+.kp-dir summary { cursor: default; overflow-wrap: anywhere; }
+.kp-dir-body { padding-left: 14px; }
+.kp-dir-body .kp-row { flex-wrap: wrap; overflow-wrap: anywhere; }
+.kp-wsum { list-style: none; }
+.kp-wsum::-webkit-details-marker { display: none; }
+.kp-chev::before { content: '▸'; color: var(--kp-muted); }
+details[open] > summary .kp-chev::before { content: '▾'; }
+.kp-wsum .kp-row > * { flex-shrink: 0; }
+.kp-wsum .kp-row > .kp-ellipsis { flex-shrink: 1; }

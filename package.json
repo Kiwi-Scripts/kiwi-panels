@@ -1,0 +1,48 @@
+{
+  "name": "@kiwi-js/panels",
+  "version": "0.0.0",
+  "description": "HTML overlay framework for panel management.",
+  "license": "MIT",
+  "author": "Miya",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kiwi-Scripts/kiwi-panels.git"
+  },
+  "homepage": "https://github.com/Kiwi-Scripts/kiwi-panels#readme",
+  "bugs": {
+    "url": "https://github.com/Kiwi-Scripts/kiwi-panels/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "happy-dom": "^21.0.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

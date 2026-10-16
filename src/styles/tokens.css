@@ -1,0 +1,18 @@
+/* Theme tokens. Override them with the `theme` option of createOverlay(), or from outside through the host element. */
+:host {
+    --kp-bg: #1e1e1e;
+    --kp-bg-alt: #181818;
+    --kp-bg-hover: #2a2d2e;
+    --kp-fg: #d4d4d4;
+    --kp-muted: #808080;
+    --kp-border: #333;
+    --kp-border-strong: #555;
+    --kp-accent: #ff9800;
+    --kp-accent-fg: #000;
+    --kp-info: #4fc3f7;
+    --kp-font: 12px/1.4 Consolas, 'Courier New', monospace;
+    --kp-radius: 4px;
+    --kp-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --kp-panel-width: 380px;
+    /* --kp-z-max and --kp-z-panel-base are set on the host by the overlay, from constants.ts. */
+}

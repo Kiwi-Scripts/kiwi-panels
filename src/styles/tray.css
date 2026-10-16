@@ -1,0 +1,44 @@
+/* ---- Shared tray buttons ---- */
+.kp-tray-btn { position: relative; box-sizing: border-box; width: 36px; height: 36px; padding: 0; display: flex; align-items: center;
+    justify-content: center; border-radius: 50%; border: 2px solid var(--kp-border-strong); background: var(--kp-bg); color: var(--kp-fg);
+    font: var(--kp-font); cursor: pointer; }
+.kp-tray-btn:hover { background: var(--kp-bg-hover); }
+.kp-tray-btn svg { width: 20px; height: 20px; fill: currentColor; pointer-events: none; }
+.kp-icon-letter { font-weight: bold; font-size: 14px; pointer-events: none; }
+.kp-tray-btn.kp-has { border-color: var(--kp-info); color: var(--kp-info); }
+.kp-tray-btn.kp-on { border-color: var(--kp-accent); color: var(--kp-accent); }
+.kp-tray-badge { position: absolute; top: -6px; right: -6px; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: 8px; background: var(--kp-info); color: #000; font: bold 10px/16px Consolas, 'Courier New', monospace;
+    text-align: center; pointer-events: none; }
+.kp-tray-btn.kp-on .kp-tray-badge { background: var(--kp-accent); }
+
+/* ---- Corner dock: a round launcher with the panel buttons sliding out next to it ---- */
+.kp-tray { position: fixed; z-index: var(--kp-z-max); display: flex; align-items: center; }
+.kp-corner-bottom { bottom: 12px; }
+.kp-corner-top { top: 12px; }
+.kp-corner-right { right: 12px; }
+.kp-corner-left { left: 12px; flex-direction: row-reverse; }
+.kp-tray-items { max-width: 0; overflow: hidden; opacity: 0; visibility: hidden;
+    transition: max-width 0.2s ease 0.3s, opacity 0.2s ease 0.3s, visibility 0s linear 0.5s; }
+.kp-tray:hover .kp-tray-items, .kp-tray.kp-tray-pinned .kp-tray-items { max-width: 600px; opacity: 1; visibility: visible; transition-delay: 0s; }
+.kp-tray-inner { display: flex; align-items: center; gap: 8px; padding: 8px; white-space: nowrap; }
+.kp-tray-pin { width: 24px; height: 24px; }
+.kp-tray-pin svg { width: 14px; height: 14px; }
+.kp-launcher { flex: none; box-sizing: border-box; width: 48px; height: 48px; padding: 0; display: flex; align-items: center;
+    justify-content: center; border-radius: 50%; border: 2px solid var(--kp-border-strong); background: var(--kp-bg); color: var(--kp-fg);
+    cursor: pointer; box-shadow: var(--kp-shadow); }
+.kp-launcher:hover { background: var(--kp-bg-hover); }
+.kp-launcher svg { width: 32px; height: 32px; fill: currentColor; pointer-events: none; }
+.kp-launcher.kp-on { border-color: var(--kp-accent); color: var(--kp-accent); }
+.kp-launcher.kp-latched { background: var(--kp-accent); border-color: var(--kp-accent); color: var(--kp-accent-fg); }
+
+/* ---- Edge bar: a taskbar along one screen edge ---- */
+.kp-bar { position: fixed; z-index: var(--kp-z-max); box-sizing: border-box; display: flex; gap: 4px; padding: 4px;
+    background: var(--kp-bg); border: 1px solid var(--kp-border); color: var(--kp-fg); font: var(--kp-font); }
+.kp-edge-bottom { left: 0; right: 0; bottom: 0; flex-direction: row; border-bottom: none; }
+.kp-edge-top { left: 0; right: 0; top: 0; flex-direction: row; border-top: none; }
+.kp-edge-left { top: 0; bottom: 0; left: 0; flex-direction: column; border-left: none; }
+.kp-edge-right { top: 0; bottom: 0; right: 0; flex-direction: column; border-right: none; }
+.kp-bar .kp-tray-btn { width: auto; min-width: 32px; height: 32px; padding: 0 10px; gap: 6px; border-radius: var(--kp-radius); }
+.kp-bar .kp-tray-btn svg { width: 16px; height: 16px; }
+.kp-tray-label { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
