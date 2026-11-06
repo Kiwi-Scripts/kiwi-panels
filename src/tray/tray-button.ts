@@ -1,5 +1,5 @@
 import { renderIcon, span } from '../dom/h';
-import type { TrayItem } from './tray';
+import type { TrayCommand, TrayItem } from './tray';
 
 export interface TrayButton {
     readonly element: HTMLButtonElement;
@@ -69,4 +69,16 @@ export function syncTrayButtons(
             parent.insertBefore( button.element, parent.children[index] ?? null );
         }
     } );
+}
+
+/** A button for a tray command; it is never lit, since a command has no state. */
+export function createCommandButton( command: TrayCommand ): HTMLButtonElement {
+    const element = document.createElement( 'button' );
+    element.type = 'button';
+    element.className = 'kp-tray-btn kp-tray-cmd';
+    element.dataset.command = command.id;
+    element.title = command.title;
+    element.onclick = () => command.onClick();
+    element.append( renderIcon( command.icon, command.title ) );
+    return element;
 }

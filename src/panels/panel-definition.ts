@@ -13,6 +13,8 @@ export interface PanelHandle {
     readonly collapsed: boolean;
     readonly fullscreen: boolean;
     readonly dockSide: DockSide | null;
+    /** Whether the panel is shown transiently by `preview()`. A previewing panel is still `closed` or `minimized` as far as its `state` goes. */
+    readonly previewing: boolean;
     /**
      * Shows the panel on top of the others and calls `onShow( args )`. On a panel that is already open it only raises it and
      * calls `onShow` again, so `args` can retarget it.
@@ -23,6 +25,19 @@ export interface PanelHandle {
      * from scratch. Only the window (position, size, collapsed, dock) is remembered. Use `minimize()` to keep the content.
      */
     close(): void;
+    /**
+     * Shows a closed or minimized panel transiently, next to the viewport point `at` (default: where the panel would open). It leaves
+     * the tray, the persisted state and the focus alone, and calls `onShow( args )`; calling it again retargets the panel. Nothing
+     * happens to an open panel. `open()` (or `toggle()`) promotes the preview in place: same mounted content, and the same position unless the user has
+     * placed the panel before, in which case it goes there.
+     * What starts and ends a preview (a held key, hovering, ...) is up to the caller.
+     */
+    preview( args?: unknown, at?: { x: number; y: number } ): void;
+    /**
+     * Hides a preview. A closed panel ends like after `close()` (`onHide`, `dispose`, the body is emptied); a minimized one goes back
+     * to being minimized, content included (`onMinimize`). Does nothing if the panel is not previewing.
+     */
+    endPreview(): void;
     /** Opens a closed or minimized panel, minimize an open one (or closes it, see `PanelDefinition.trayToggle`). */
     toggle(): void;
     /** Hides an open panel but keeps it alive, content and state included; its tray button stays. */
@@ -44,7 +59,7 @@ export interface PanelHooks {
     onHide?(): void;
     /** The panel was minimized: it is hidden but not closed. */
     onMinimize?(): void;
-    /** Redraw. Called throttled while the panel is open (or minimized and active), and by `overlay.refresh()`. */
+    /** Redraw. Called throttled while the panel is open, previewing, or minimized and active, and by `overlay.refresh()`. */
     refresh?(): void;
     /** Whether the panel holds something that is running. A minimized panel for which this is true keeps refreshing and is outlined in the tray. */
     isActive?(): boolean;

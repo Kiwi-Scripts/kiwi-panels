@@ -79,6 +79,31 @@ describe( 'panel hotkeys with a modifier', () => {
         expect( overlay.modifier?.isLatched() ).toBe( false );
     } );
 
+    it( 'swallows the keyup that releases the latch, so that the browser menu bar does not take the focus', () => {
+        key( 'KeyL', { altKey: true } );
+        key( 'AltLeft', { key: 'Alt', altKey: true } );
+        const up = new KeyboardEvent( 'keyup', { code: 'AltLeft', key: 'Alt', cancelable: true } );
+        document.dispatchEvent( up );
+        expect( overlay.modifier?.isLatched() ).toBe( false );
+        expect( up.defaultPrevented ).toBe( true );
+    } );
+
+    it( 'does not release the latch when the modifier was used with a mouse button', () => {
+        key( 'KeyL', { altKey: true } );
+        key( 'AltLeft', { key: 'Alt', altKey: true } );
+        document.dispatchEvent( new MouseEvent( 'pointerdown', { altKey: true, bubbles: true } ) );
+        document.dispatchEvent( new KeyboardEvent( 'keyup', { code: 'AltLeft', key: 'Alt' } ) );
+        expect( overlay.modifier?.isLatched() ).toBe( true );
+    } );
+
+    it( 'does not release the latch when the modifier was used with another key', () => {
+        key( 'KeyL', { altKey: true } );
+        key( 'AltLeft', { key: 'Alt', altKey: true } );
+        key( 'KeyF', { altKey: true } );
+        document.dispatchEvent( new KeyboardEvent( 'keyup', { code: 'AltLeft', key: 'Alt' } ) );
+        expect( overlay.modifier?.isLatched() ).toBe( true );
+    } );
+
     it( 'does not apply the latch while typing in a text field, but the real key still works', () => {
         const a = overlay.register( def( 'a', { hotkey: 'KeyF' } ) );
         const input = document.createElement( 'input' );

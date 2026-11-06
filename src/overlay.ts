@@ -1,7 +1,7 @@
-import { HOST_TAG, OVERLAY_ATTR, Z_MAX, Z_PANEL_BASE } from './constants';
 import { createEmitter } from './core/events';
 import { createScheduler } from './core/scheduler';
 import { div } from './dom/h';
+import { createOverlayHost } from './host';
 import { createHotkeys, type HotkeyBinding, type Hotkeys } from './input/hotkeys';
 import { createModifier, type Modifier } from './input/modifier';
 import { createPanelController, type PanelController } from './panels/panel-controller';
@@ -9,14 +9,16 @@ import type { PanelDefinition, PanelHandle } from './panels/panel-definition';
 import { createPanelStack } from './panels/panel-stack';
 import { createPanelPersistence } from './persistence/panel-persistence';
 import { sessionStorageAdapter, type StorageAdapter } from './persistence/storage';
-import { applyTheme, OVERLAY_CSS, type Theme } from './styles';
+import type { Theme } from './styles';
 import { cornerDock } from './tray/corner-dock';
-import type { Tray } from './tray/tray';
+import type { Tray, TrayCommand } from './tray/tray';
 import type { DockSide, ModifierKey, PanelChange } from './types';
 
 export interface OverlayOptions {
     /** The taskbar. Default: a {@link cornerDock}. `false` for none, e.g. when the application opens panels itself. */
     tray?: Tray | false;
+    /** Extra buttons for the tray that are not tied to a panel (e.g. a power button), shown after the panel buttons. */
+    trayCommands?: readonly TrayCommand[];
     /** Overrides of the design tokens. */
     theme?: Theme;
     /** Where panel positions, sizes and states are kept. Default: session storage. `false` turns persistence off. */
@@ -103,21 +105,10 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
     }
     const runOutside = options.runOutside ?? ( <T>( fn: () => T ): T => fn() );
 
-    // A shadow root keeps page styles out of the overlay and the overlay styles out of the page.
-    const host = document.createElement( HOST_TAG );
-    host.setAttribute( OVERLAY_ATTR, '' );
-    // `all: initial` stops inherited page styles (font, color, ...) from reaching the shadow tree.
-    host.style.cssText = `all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: ${Z_MAX};`;
-    host.style.setProperty( '--kp-z-max', String( Z_MAX ) );
-    host.style.setProperty( '--kp-z-panel-base', String( Z_PANEL_BASE ) );
-    applyTheme( host, options.theme );
-    const root = host.attachShadow( { mode: 'open' } );
-    const style = document.createElement( 'style' );
-    style.textContent = OVERLAY_CSS;
+    const { host, root } = createOverlayHost( options.container, options.theme );
     const layer = div( 'kp-layer' );
     const trayRoot = div( 'kp-tray-root' );
-    root.append( style, layer, trayRoot );
-    ( options.container ?? document.body ).append( host );
+    root.append( layer, trayRoot );
 
     const events = createEmitter<OverlayEvents>();
     const controllers = new Map<string, PanelController>();
@@ -164,6 +155,7 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
 
     tray?.mount( trayRoot, {
         toggle: id => controllers.get( id )?.handle.toggle(),
+        commands: options.trayCommands,
         launcher: modifier && trayLatch ? () => void modifier.toggleLatched() : undefined
     } );
     if ( modifier ) {

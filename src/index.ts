@@ -8,11 +8,14 @@ export type { NamedPosition, PositionSpec } from './panels/movable';
 export type { HeaderAction, HeaderCollapse, HeaderFullscreen, HeaderSpec } from './panels/header';
 export { renderHeader } from './panels/header';
 
-export type { Tray, TrayActions, TrayItem } from './tray/tray';
+export type { Tray, TrayActions, TrayCommand, TrayItem } from './tray/tray';
 export { cornerDock } from './tray/corner-dock';
 export type { Corner, CornerDockOptions } from './tray/corner-dock';
 export { edgeBar } from './tray/edge-bar';
 export type { Edge, EdgeBarOptions } from './tray/edge-bar';
+
+export { createDormantLauncher } from './dormant';
+export type { DormantLauncher, DormantOptions } from './dormant';
 
 export { createHotkeys, parseCombo } from './input/hotkeys';
 export type { HotkeyBinding, Hotkeys, HotkeysOptions } from './input/hotkeys';

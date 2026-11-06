@@ -1,6 +1,6 @@
 import { div, svgIcon } from '../dom/h';
 import type { Tray, TrayActions, TrayItem } from './tray';
-import { createTrayButton, syncTrayButtons, type TrayButton } from './tray-button';
+import { createCommandButton, createTrayButton, syncTrayButtons, type TrayButton } from './tray-button';
 
 export type Corner = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 
@@ -9,6 +9,8 @@ export interface CornerDockOptions {
     corner?: Corner;
     /** SVG path (24x24) of the launcher. Default: a grid. */
     icon?: string;
+    /** `KeyboardEvent.code` that pins the tray open, together with the overlay's modifier key. Default: 'KeyT'; `null` for none. */
+    trayHotkey?: string | null;
 }
 
 const ICON_GRID = 'M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z';
@@ -26,6 +28,7 @@ export function cornerDock( options: CornerDockOptions = {} ): Tray {
     let launcher: HTMLButtonElement | undefined;
     let pin: HTMLButtonElement | undefined;
     let inner: HTMLElement | undefined;
+    let list: HTMLElement | undefined;
     let actions: TrayActions | undefined;
 
     const toggle = ( state?: boolean ) => {
@@ -34,21 +37,24 @@ export function cornerDock( options: CornerDockOptions = {} ): Tray {
     };
 
     return {
-        trayHotkey: 'KeyT',
+        trayHotkey: options.trayHotkey === undefined ? 'KeyT' : options.trayHotkey,
         toggle,
         mount( container, tray ) {
             actions = tray;
             root = div( `kp-tray kp-corner-${vertical} kp-corner-${horizontal}` );
             const items = div( 'kp-tray-items' );
             inner = div( 'kp-tray-inner' );
-            
+
             pin = document.createElement( 'button' );
             pin.type = 'button';
             pin.className = 'kp-tray-btn kp-tray-pin';
             pin.title = 'Keep the tray open';
             pin.append( svgIcon( ICON_PIN ) );
             pin.onclick = () => toggle();
-            inner.append( pin );
+            // The panel buttons are synced into a wrapper, so that the pin button stays first and the commands last.
+            list = div( 'kp-tray-list' );
+            list.style.display = 'contents';
+            inner.append( pin, list, ...( tray.commands ?? [] ).map( createCommandButton ) );
 
             launcher = document.createElement( 'button' );
             launcher.type = 'button';
@@ -62,15 +68,8 @@ export function cornerDock( options: CornerDockOptions = {} ): Tray {
             container.append( root );
         },
         update( items: readonly TrayItem[] ) {
-            if ( !inner || !actions ) {
+            if ( !list || !actions ) {
                 return;
-            }
-            // The pin button stays first, so the panel buttons are synced into a wrapper that follows it.
-            let list = inner.querySelector<HTMLElement>( '.kp-tray-list' );
-            if ( !list ) {
-                list = div( 'kp-tray-list' );
-                list.style.display = 'contents';
-                inner.append( list );
             }
             syncTrayButtons( list, buttons, items, item => createTrayButton( item, () => actions?.toggle( item.id ) ) );
         },

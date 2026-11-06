@@ -6,6 +6,8 @@ export type PositionSpec = NamedPosition | AnyPos | ( ( panel: HTMLElement ) => 
 const MARGIN = 8;
 /** How much of a panel stays reachable when it is dragged or restored partly off screen. */
 const GRAB = 40;
+/** The gap between the pointer and a panel shown next to it. */
+const OFFSET = 16;
 
 const clamp = ( value: number, min: number, max: number ): number => Math.max( min, Math.min( value, max ) );
 
@@ -22,6 +24,15 @@ export function placePanel( panel: HTMLElement, pos: AnyPos ): void {
     }
     panel.style.top = `${top}px`;
     panel.style.maxHeight = `${Math.max( 120, window.innerHeight - top - MARGIN )}px`;
+}
+
+/** Where to put `panel` so that it appears next to the viewport point `at`; it flips to the other side of the point where it would not fit. */
+export function nearPoint( panel: HTMLElement, at: { x: number; y: number } ): PanelPos {
+    const { offsetWidth: w, offsetHeight: h } = panel;
+    const { innerWidth: vw, innerHeight: vh } = window;
+    const left = at.x + OFFSET + w + MARGIN > vw ? at.x - OFFSET - w : at.x + OFFSET;
+    const top = at.y + OFFSET + h + MARGIN > vh ? at.y - OFFSET - h : at.y + OFFSET;
+    return { left: Math.max( MARGIN, left ), top: Math.max( MARGIN, top ) };
 }
 
 /** Turns a named position, a fixed one or a function into coordinates, for the size the panel has while it is shown. */

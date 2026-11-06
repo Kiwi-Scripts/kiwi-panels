@@ -1,5 +1,5 @@
 import { div } from '../dom/h';
-import { createTrayButton, syncTrayButtons, type TrayButton } from './tray-button';
+import { createCommandButton, createTrayButton, syncTrayButtons, type TrayButton } from './tray-button';
 import type { Tray, TrayActions, TrayItem } from './tray';
 
 export type Edge = 'bottom' | 'top' | 'left' | 'right';
@@ -22,6 +22,8 @@ export function edgeBar( options: EdgeBarOptions = {} ): Tray {
         mount( container, tray ) {
             actions = tray;
             bar = div( `kp-bar kp-edge-${edge}` );
+            // The panel buttons are inserted before the commands, which stay at the end.
+            bar.append( ...( tray.commands ?? [] ).map( createCommandButton ) );
             container.append( bar );
         },
         update( items: readonly TrayItem[] ) {

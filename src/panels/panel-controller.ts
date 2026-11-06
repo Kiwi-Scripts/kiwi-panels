@@ -5,7 +5,7 @@ import type { PanelPersistence } from '../persistence/panel-persistence';
 import type { TrayItem } from '../tray/tray';
 import type { AnyPos, DockSide, PanelChange, PanelSize, PanelState } from '../types';
 import { renderHeader } from './header';
-import { dragPanel, placePanel, resolvePosition } from './movable';
+import { dragPanel, nearPoint, placePanel, resolvePosition } from './movable';
 import type { PanelContext, PanelDefinition, PanelHandle, PanelHooks } from './panel-definition';
 import type { PanelStack } from './panel-stack';
 import { attachResize } from './resizable';
@@ -90,6 +90,12 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
     let hooks: PanelHooks = {};
     let mounted = false;
     let disposed = false;
+    // A preview shows a closed or minimized panel transiently; it is not a state (nothing about it is persisted or shown in the tray).
+    let previewing = false;
+    let previewAt: { x: number; y: number } | undefined;
+    let previewPos: AnyPos | undefined;
+    // The panel was promoted from a preview and has not been moved by the user: its position is not kept for the next open.
+    let promoted = false;
 
     const persist = (): void => {
         if ( disposed ) {
@@ -104,15 +110,22 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
     };
 
     const layout = (): void => {
-        el.classList.toggle( 'kp-open', state === 'open' );
+        const open = state === 'open';
+        const preview = previewing && !open;
+        el.classList.toggle( 'kp-open', open );
+        el.classList.toggle( 'kp-preview', preview );
         el.classList.toggle( 'kp-collapsed', collapsed );
         el.classList.toggle( 'kp-fullscreen', fullscreen );
         el.classList.toggle( 'kp-docked-left', dockSide === 'left' );
         el.classList.toggle( 'kp-docked-right', dockSide === 'right' );
         applySize();
-        if ( state === 'open' && !dockSide && !fullscreen ) {
-            pos ??= resolvePosition( def.defaultPosition ?? 'center', el );
-            placePanel( el, pos );
+        if ( ( open || preview ) && !dockSide && !fullscreen ) {
+            if ( preview && previewAt ) {
+                placePanel( el, previewPos = nearPoint( el, previewAt ) );
+            } else {
+                pos ??= resolvePosition( def.defaultPosition ?? 'center', el );
+                placePanel( el, pos );
+            }
         }
     };
 
@@ -133,6 +146,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
                     dragPanel( ev, el, p => {
                         pos = p;
                         moved = true;
+                        promoted = false;
                         layout();
                     }, persist );
                 }
@@ -230,6 +244,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         get collapsed() { return collapsed; },
         get fullscreen() { return fullscreen; },
         get dockSide() { return dockSide; },
+        get previewing() { return previewing; },
 
         open( args ) {
             if ( disposed ) {
@@ -238,6 +253,16 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
             ensureMounted();
             const wasOpen = state === 'open';
             if ( !wasOpen ) {
+                if ( previewing ) {
+                    // Promoted in place: the window stays where the preview is, unless the user has placed this panel before.
+                    if ( !dockSide && !moved && previewPos ) {
+                        pos = previewPos;
+                        promoted = true;
+                    }
+                    previewing = false;
+                    previewAt = undefined;
+                    previewPos = undefined;
+                }
                 setState( 'open' );
                 rebuildHeader();
             }
@@ -246,12 +271,50 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         },
         close() {
             if ( state === 'closed' ) {
+                handle.endPreview();
                 return;
             }
             fullscreen = false;
+            previewing = false;
+            previewAt = undefined;
+            previewPos = undefined;
+            if ( promoted && !moved ) {
+                pos = undefined;
+            }
+            promoted = false;
             setState( 'closed' );
             guard( id, 'onHide', () => hooks.onHide?.() );
             teardown();
+        },
+        preview( args, at ) {
+            if ( disposed || state === 'open' ) {
+                return;
+            }
+            ensureMounted();
+            const first = !previewing;
+            previewing = true;
+            previewAt = at;
+            layout();
+            if ( first ) {
+                rebuildHeader();
+            }
+            env.stack.raise( el );
+            guard( id, 'onShow', () => hooks.onShow?.( args ) );
+        },
+        endPreview() {
+            if ( !previewing ) {
+                return;
+            }
+            previewing = false;
+            previewAt = undefined;
+            previewPos = undefined;
+            layout();
+            if ( state === 'closed' ) {
+                guard( id, 'onHide', () => hooks.onHide?.() );
+                teardown();
+            } else {
+                guard( id, 'onMinimize', () => hooks.onMinimize?.() );
+            }
         },
         toggle() {
             if ( state === 'open' ) {
@@ -300,6 +363,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         moveTo( next ) {
             pos = next;
             moved = true;
+            promoted = false;
             layout();
             persist();
         },
@@ -320,6 +384,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
                 // Anchored at the left edge, so that the panel grows to the right and down.
                 pos = { left: rect.left, top: rect.top };
                 moved = true;
+                promoted = false;
                 placePanel( el, pos );
             },
             onResize: next => {
@@ -359,7 +424,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
             changed();
         },
         relayout: layout,
-        needsRefresh: () => state === 'open' || ( state === 'minimized' && !!hooks.isActive?.() ),
+        needsRefresh: () => state === 'open' || previewing || ( state === 'minimized' && !!hooks.isActive?.() ),
         refresh: () => guard( id, 'refresh', () => hooks.refresh?.() ),
         trayItem: () => ( { id, title, icon: def.icon, badge, state, active: !!hooks.isActive?.() } ),
         dispose() {

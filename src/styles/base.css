@@ -6,7 +6,7 @@
     width: var(--kp-panel-width); max-width: calc(100vw - 16px); overflow: hidden; border-radius: var(--kp-radius);
     border: 1px solid var(--kp-border-strong); background: var(--kp-bg); color: var(--kp-fg); font: var(--kp-font);
     box-shadow: var(--kp-shadow); }
-.kp-panel.kp-open { display: flex; }
+.kp-panel.kp-open, .kp-panel.kp-preview { display: flex; }
 .kp-header { flex: none; padding: 8px; background: var(--kp-bg); border-bottom: 1px solid var(--kp-border);
     cursor: move; user-select: none; touch-action: none; }
 .kp-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 8px; }

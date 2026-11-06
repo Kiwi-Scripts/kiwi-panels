@@ -12,7 +12,17 @@ export interface TrayItem {
     active: boolean;
 }
 
+/** An extra button of the tray that is not tied to a panel, e.g. a power button. Supplied through `OverlayOptions.trayCommands`. */
+export interface TrayCommand {
+    id: string;
+    title: string;
+    icon: PanelIcon;
+    onClick(): void;
+}
+
 export interface TrayActions {
+    /** Extra buttons the tray shows after the panel buttons. Trays that have no room for them may ignore them. */
+    commands?: readonly TrayCommand[];
     /** Opens the panel, or closes/minimizes it if it is open. */
     toggle( id: string ): void;
     /** The launcher was clicked. Only provided when the overlay has something to do with it (toggling the modifier latch). */

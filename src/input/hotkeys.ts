@@ -107,7 +107,14 @@ export function createHotkeys( options: HotkeysOptions = {} ): Hotkeys {
         modifier?.sync( ev );
         if ( modifier && tap && ev.key === modifier.key && modifier.isLatched() ) {
             modifier.toggleLatched();
+            // Alt alone would otherwise move the focus to the browser's menu bar.
+            ev.preventDefault();
         }
+        tap = false;
+    };
+
+    // The modifier combined with a mouse button (e.g. Alt+click) is a use of the key, not a tap.
+    const onPointerDown = (): void => {
         tap = false;
     };
 
@@ -125,6 +132,7 @@ export function createHotkeys( options: HotkeysOptions = {} ): Hotkeys {
         listeners: [
             [document, 'keydown', onKeyDown, true],
             [document, 'keyup', onKeyUp, true],
+            [document, 'pointerdown', onPointerDown, true],
             [window, 'blur', () => modifier?.reset(), false]
         ]
     };
