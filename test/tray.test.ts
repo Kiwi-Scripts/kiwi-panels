@@ -68,3 +68,16 @@ describe( 'custom tray', () => {
         expect( tray.dispose ).toHaveBeenCalled();
     } );
 } );
+
+describe( 'panels without a tray button', () => {
+    it( 'are left out of the tray but open like any other', () => {
+        const overlay = createOverlay( { storage: false, tray: cornerDock() } );
+        overlay.register( { id: 'a', title: 'A', mount: () => document.createElement( 'div' ) } );
+        overlay.register( { id: 'quiet', title: 'Quiet', tray: false, mount: () => document.createElement( 'div' ) } );
+        const ids = Array.from( overlay.root.querySelectorAll<HTMLElement>( '.kp-tray-inner button' ), b => b.dataset.panel ).filter( Boolean );
+        expect( ids ).toEqual( ['a'] );
+        overlay.panels.open( 'quiet' );
+        expect( overlay.panels.get( 'quiet' )?.state ).toBe( 'open' );
+        overlay.dispose();
+    } );
+} );

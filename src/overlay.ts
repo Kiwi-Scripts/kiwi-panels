@@ -126,7 +126,7 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
     const hotkeys = createHotkeys( { modifier, latchKey: hotkeyOptions?.latchKey } );
     const trayLatch = hotkeyOptions?.trayLatch ?? false;
 
-    const updateTray = (): void => tray?.update( Array.from( controllers.values(), c => c.trayItem() ) );
+    const updateTray = (): void => tray?.update( Array.from( controllers.values() ).filter( c => c.inTray ).map( c => c.trayItem() ) );
 
     const refresh = (): void => {
         controllers.forEach( c => c.needsRefresh() && c.refresh() );

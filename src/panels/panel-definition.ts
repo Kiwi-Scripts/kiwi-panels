@@ -112,6 +112,11 @@ export interface PanelDefinition {
     fullscreenable?: boolean;
     resizable?: boolean;
     dockable?: boolean;
+    /**
+     * Whether the panel has a button in the tray. Without one it is only opened by code (or its hotkey), e.g. a small transient
+     * panel that belongs to another. Default: true.
+     */
+    tray?: boolean;
     /** What the tray button does to an open panel. Default: 'minimize'. */
     trayToggle?: 'close' | 'minimize';
 

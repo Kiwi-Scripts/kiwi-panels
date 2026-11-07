@@ -34,6 +34,8 @@ export interface PanelController {
     needsRefresh(): boolean;
     refresh(): void;
     trayItem(): TrayItem;
+    /** Whether the panel has a button in the tray (`PanelDefinition.tray`). */
+    readonly inTray: boolean;
     dispose(): void;
 }
 
@@ -426,6 +428,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         relayout: layout,
         needsRefresh: () => state === 'open' || previewing || ( state === 'minimized' && !!hooks.isActive?.() ),
         refresh: () => guard( id, 'refresh', () => hooks.refresh?.() ),
+        inTray: def.tray !== false,
         trayItem: () => ( { id, title, icon: def.icon, badge, state, active: !!hooks.isActive?.() } ),
         dispose() {
             if ( disposed ) {
