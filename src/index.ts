@@ -4,7 +4,10 @@ export type { Overlay, OverlayEvents, OverlayOptions, PanelsApi } from './overla
 export type {
     PanelContext, PanelDefinition, PanelHandle, PanelHooks, PanelMountResult
 } from './panels/panel-definition';
-export type { NamedPosition, PositionSpec } from './panels/movable';
+export type {
+    AnchoredPlacement, AnchorSpec, Direction, NamedPosition, PlacementEnv, PlacementStep, PositionSpec, StackedPlacement, StepSpec
+} from './panels/placement';
+export { placeAround, placeStacked } from './panels/placement';
 export type { HeaderAction, HeaderCollapse, HeaderFullscreen, HeaderSpec } from './panels/header';
 export { renderHeader } from './panels/header';
 

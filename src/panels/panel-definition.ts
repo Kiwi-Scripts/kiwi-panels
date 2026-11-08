@@ -1,6 +1,6 @@
 import type { Overlay } from '../overlay';
 import type { AnyPos, DockSide, PanelIcon, PanelSize, PanelState } from '../types';
-import type { PositionSpec } from './movable';
+import type { PositionSpec } from './placement';
 
 /** Everything an application can do with a registered panel. */
 export interface PanelHandle {
@@ -100,7 +100,10 @@ export interface PanelDefinition {
     /** Initial size in px; what is missing is determined by the content (height) or the theme (width). */
     size?: Partial<PanelSize>;
     minSize?: Partial<PanelSize>;
-    /** Where the panel appears the first time. Default: 'center'. After the user moved it, it keeps its position. */
+    /**
+     * Where the panel appears: a fixed place, one that makes room for the panels already there, or one next to the pointer or an
+     * element (see {@link PositionSpec}). Default: 'center'. After the user moved the panel, it keeps that position.
+     */
     defaultPosition?: PositionSpec;
     /** A key (see {@link HotkeyBinding.combo}) that toggles the panel; needs the overlay's modifier key if it has one. */
     hotkey?: string;

@@ -5,9 +5,10 @@ import type { PanelPersistence } from '../persistence/panel-persistence';
 import type { TrayItem } from '../tray/tray';
 import type { AnyPos, DockSide, PanelChange, PanelSize, PanelState } from '../types';
 import { renderHeader } from './header';
-import { dragPanel, nearPoint, placePanel, resolvePosition } from './movable';
+import { dragPanel, nearPoint, placePanel } from './movable';
 import type { PanelContext, PanelDefinition, PanelHandle, PanelHooks } from './panel-definition';
 import type { PanelStack } from './panel-stack';
+import { isDynamic, resolvePosition, type PlacementEnv } from './placement';
 import { attachResize } from './resizable';
 
 export interface ControllerEnv {
@@ -22,6 +23,8 @@ export interface ControllerEnv {
     /** Anything the tray shows changed. */
     onTrayChange(): void;
     requestRefresh(): void;
+    /** What the placement of a panel can look at: the pointer and the other panels. */
+    placement( self: HTMLElement ): PlacementEnv;
 }
 
 export interface PanelController {
@@ -96,8 +99,12 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
     let previewing = false;
     let previewAt: { x: number; y: number } | undefined;
     let previewPos: AnyPos | undefined;
-    // The panel was promoted from a preview and has not been moved by the user: its position is not kept for the next open.
-    let promoted = false;
+    // Where the panel is while it is open, if not where the user keeps it: set when a preview is promoted in place.
+    let session: AnyPos | undefined;
+    // The default position of a dynamic specification (next to the pointer, ...) is worked out once per open.
+    let autoPos: AnyPos | undefined;
+    const spec = def.defaultPosition ?? 'center';
+    const dynamic = isDynamic( spec );
 
     const persist = (): void => {
         if ( disposed ) {
@@ -125,8 +132,8 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
             if ( preview && previewAt ) {
                 placePanel( el, previewPos = nearPoint( el, previewAt ) );
             } else {
-                pos ??= resolvePosition( def.defaultPosition ?? 'center', el );
-                placePanel( el, pos );
+                const where = session ?? ( moved && pos ? pos : dynamic ? autoPos ??= resolvePosition( spec, el, env.placement( el ) ) : resolvePosition( spec, el, env.placement( el ) ) );
+                placePanel( el, where );
             }
         }
     };
@@ -148,7 +155,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
                     dragPanel( ev, el, p => {
                         pos = p;
                         moved = true;
-                        promoted = false;
+                        session = undefined;
                         layout();
                     }, persist );
                 }
@@ -256,10 +263,9 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
             const wasOpen = state === 'open';
             if ( !wasOpen ) {
                 if ( previewing ) {
-                    // Promoted in place: the window stays where the preview is, unless the user has placed this panel before.
-                    if ( !dockSide && !moved && previewPos ) {
-                        pos = previewPos;
-                        promoted = true;
+                    // Promoted in place: the window stays where the preview is, also if the user has placed this panel elsewhere before.
+                    if ( !dockSide && previewPos ) {
+                        session = previewPos;
                     }
                     previewing = false;
                     previewAt = undefined;
@@ -280,10 +286,8 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
             previewing = false;
             previewAt = undefined;
             previewPos = undefined;
-            if ( promoted && !moved ) {
-                pos = undefined;
-            }
-            promoted = false;
+            session = undefined;
+            autoPos = undefined;
             setState( 'closed' );
             guard( id, 'onHide', () => hooks.onHide?.() );
             teardown();
@@ -365,7 +369,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         moveTo( next ) {
             pos = next;
             moved = true;
-            promoted = false;
+            session = undefined;
             layout();
             persist();
         },
@@ -386,7 +390,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
                 // Anchored at the left edge, so that the panel grows to the right and down.
                 pos = { left: rect.left, top: rect.top };
                 moved = true;
-                promoted = false;
+                session = undefined;
                 placePanel( el, pos );
             },
             onResize: next => {

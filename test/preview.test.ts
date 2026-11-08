@@ -127,16 +127,27 @@ describe( 'panel preview', () => {
         expect( panel.element.style.left ).toBe( '300px' );
     } );
 
-    it( 'promotes to the position the user chose, if there is one, and keeps it', () => {
+    it( 'promotes in place even if the user placed the panel before, and goes back to that place next time', () => {
         const panel = overlay.register( def( 'a' ) );
         panel.moveTo( { left: 100, top: 60 } );
         panel.preview( undefined, { x: 500, y: 200 } );
-        expect( panel.element.style.left ).not.toBe( '100px' );
+        const left = panel.element.style.left;
+        expect( left ).not.toBe( '100px' );
         panel.open();
-        expect( panel.element.style.left ).toBe( '100px' );
+        expect( panel.element.style.left ).toBe( left );
         panel.close();
         panel.open();
         expect( panel.element.style.left ).toBe( '100px' );
+    } );
+
+    it( 'keeps a promoted panel where the user drags it', () => {
+        const panel = overlay.register( def( 'a' ) );
+        panel.preview( undefined, { x: 500, y: 200 } );
+        panel.open();
+        panel.moveTo( { left: 120, top: 30 } );
+        panel.close();
+        panel.open();
+        expect( panel.element.style.left ).toBe( '120px' );
     } );
 
     it( 'ends when the panel is closed, and is refreshed while it lasts', () => {

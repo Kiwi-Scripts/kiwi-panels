@@ -9,6 +9,7 @@ import type { PanelDefinition, PanelHandle } from './panels/panel-definition';
 import { createPanelStack } from './panels/panel-stack';
 import { createPanelPersistence } from './persistence/panel-persistence';
 import { sessionStorageAdapter, type StorageAdapter } from './persistence/storage';
+import type { Rect } from './panels/placement';
 import type { Theme } from './styles';
 import { cornerDock } from './tray/corner-dock';
 import type { Tray, TrayCommand } from './tray/tray';
@@ -121,6 +122,16 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
     const inOverlay = ( target: EventTarget | null ): boolean =>
         target instanceof Node && ( target === host || host.contains( target ) || root.contains( target ) );
 
+    // Where the pointer last was, for panels that open next to it. It is also what a click on a button shows.
+    let pointer: { x: number; y: number } | undefined;
+    const trackPointer = ( ev: Event ): void => {
+        const { clientX: x, clientY: y } = ev as PointerEvent;
+        pointer = { x, y };
+    };
+    const obstacles = ( self: HTMLElement ): Rect[] => stack.order()
+        .filter( el => el !== self && el.classList.contains( 'kp-open' ) )
+        .map( el => el.getBoundingClientRect() );
+
     const hotkeyOptions = options.hotkeys === false ? undefined : options.hotkeys;
     const modifier = hotkeyOptions?.modifier && createModifier( hotkeyOptions.modifier, inOverlay );
     const hotkeys = createHotkeys( { modifier, latchKey: hotkeyOptions?.latchKey } );
@@ -184,7 +195,8 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
             restoreState: options.restoreState ?? true,
             onStateChange: change => events.emit( 'panelchange', change ),
             onTrayChange: updateTray,
-            requestRefresh: scheduler.request
+            requestRefresh: scheduler.request,
+            placement: self => ( { pointer, obstacles: () => obstacles( self ) } )
         } );
         controllers.set( definition.id, controller );
         if ( definition.hotkey ) {
@@ -237,7 +249,7 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
     }
 
     const onResize = (): void => controllers.forEach( c => c.relayout() );
-    const listeners = [...( hotkeyOptions ? hotkeys.listeners : [] ), [window, 'resize', onResize, false] as const];
+    const listeners = [...( hotkeyOptions ? hotkeys.listeners : [] ), [window, 'resize', onResize, false] as const, [document, 'pointermove', trackPointer, true] as const, [document, 'pointerdown', trackPointer, true] as const];
     runOutside( () => listeners.forEach( ( [target, type, fn, capture] ) => target.addEventListener( type, fn, capture ) ) );
 
     const overlay: Overlay = {
