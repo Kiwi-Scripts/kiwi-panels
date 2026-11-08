@@ -220,7 +220,7 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
             return;
         }
         if ( closing ) {
-            controller.handle.close();
+            controller.handle.close( { force: true } );
         }
         unbinders.get( id )?.();
         unbinders.delete( id );

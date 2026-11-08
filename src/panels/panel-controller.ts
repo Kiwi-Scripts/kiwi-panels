@@ -246,6 +246,16 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         env.onTrayChange();
     };
 
+    /** Whether the panel's `beforeClose` hook asked to stay open. A hook that throws does not keep the panel from closing. */
+    const askToKeep = (): boolean => {
+        try {
+            return hooks.beforeClose?.() === false;
+        } catch ( error ) {
+            console.error( `[kiwi-panels] panel "${id}": beforeClose failed`, error );
+            return false;
+        }
+    };
+
     const handle: PanelHandle = {
         id,
         element: el,
@@ -278,9 +288,12 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
             env.stack.raise( el );
             guard( id, 'onShow', () => hooks.onShow?.( args ) );
         },
-        close() {
+        close( options ) {
             if ( state === 'closed' ) {
                 handle.endPreview();
+                return;
+            }
+            if ( !options?.force && askToKeep() ) {
                 return;
             }
             fullscreen = false;

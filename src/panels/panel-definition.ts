@@ -24,7 +24,7 @@ export interface PanelHandle {
      * Ends the panel's content: `onHide` and `dispose` are called and the body is emptied, so the next `open()` runs `mount()` again
      * from scratch. Only the window (position, size, collapsed, dock) is remembered. Use `minimize()` to keep the content.
      */
-    close(): void;
+    close( options?: { force?: boolean } ): void;
     /**
      * Shows a closed or minimized panel transiently, next to the viewport point `at` (default: where the panel would open). It leaves
      * the tray, the persisted state and the focus alone, and calls `onShow( args )`; calling it again retargets the panel. Nothing
@@ -55,6 +55,11 @@ export interface PanelHandle {
 export interface PanelHooks {
     /** The panel was opened, or opened again with other `args`. */
     onShow?( args?: unknown ): void;
+    /**
+     * The panel is about to be closed, by its close button, `close()`, Escape or the tray. Return `false` to keep it open: to end
+     * something that is running first, say, so that the first close only stops it. `close( { force: true } )` does not ask.
+     */
+    beforeClose?(): boolean | void;
     /** The panel was closed. */
     onHide?(): void;
     /** The panel was minimized: it is hidden but not closed. */
