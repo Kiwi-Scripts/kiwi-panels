@@ -94,6 +94,9 @@ export interface Overlay {
     dispose(): void;
 }
 
+const MODIFIER_LABELS: Record<ModifierKey, string> = { Alt: 'Alt', Control: 'Ctrl', Shift: 'Shift', Meta: 'Meta' };
+const modifierLabel = ( key: ModifierKey ): string => MODIFIER_LABELS[key];
+
 let singleton: Overlay | undefined;
 
 /** Creates the overlay: a shadow root with the panels, the tray, and the hotkeys. See {@link OverlayOptions}. */
@@ -167,6 +170,7 @@ export function createOverlay( options: OverlayOptions = {} ): Overlay {
     tray?.mount( trayRoot, {
         toggle: id => controllers.get( id )?.handle.toggle(),
         commands: options.trayCommands,
+        modifier: modifier && modifierLabel( hotkeyOptions!.modifier! ),
         launcher: modifier && trayLatch ? () => void modifier.toggleLatched() : undefined
     } );
     if ( modifier ) {

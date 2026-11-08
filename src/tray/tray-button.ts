@@ -1,6 +1,11 @@
 import { renderIcon, span } from '../dom/h';
 import type { TrayCommand, TrayItem } from './tray';
 
+/** The text for a key on a button: 'KeyI' is shown as 'I'. */
+export function keyLabel( combo: string ): string {
+    return combo.split( '+' ).map( part => part.replace( /^(Key|Digit)/, '' ) ).join( '+' );
+}
+
 export interface TrayButton {
     readonly element: HTMLButtonElement;
     /** Brings the button up to date with the item. */
@@ -30,6 +35,9 @@ export function createTrayButton( item: TrayItem, onClick: () => void, options: 
     const count = span( 'kp-tray-badge', '' );
     count.style.display = 'none';
     element.append( count );
+    const key = span( 'kp-tray-key', '' );
+    key.style.display = 'none';
+    element.append( key );
 
     return {
         element,
@@ -43,6 +51,8 @@ export function createTrayButton( item: TrayItem, onClick: () => void, options: 
             const shown = next.badge !== null && next.badge !== '' && next.badge !== 0;
             count.style.display = shown ? '' : 'none';
             count.textContent = shown ? String( next.badge ) : '';
+            key.style.display = next.hotkey ? '' : 'none';
+            key.textContent = next.hotkey ?? '';
         }
     };
 }
@@ -80,5 +90,8 @@ export function createCommandButton( command: TrayCommand ): HTMLButtonElement {
     element.title = command.title;
     element.onclick = () => command.onClick();
     element.append( renderIcon( command.icon, command.title ) );
+    if ( command.label ) {
+        element.append( span( 'kp-tray-key', command.label ) );
+    }
     return element;
 }

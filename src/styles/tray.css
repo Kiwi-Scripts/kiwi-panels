@@ -22,15 +22,24 @@
     transition: max-width 0.2s ease 0.3s, opacity 0.2s ease 0.3s, visibility 0s linear 0.5s; }
 .kp-tray:hover .kp-tray-items, .kp-tray.kp-tray-pinned .kp-tray-items { max-width: 600px; opacity: 1; visibility: visible; transition-delay: 0s; }
 .kp-tray-inner { display: flex; align-items: center; gap: 8px; padding: 8px; white-space: nowrap; }
-.kp-tray-pin { width: 24px; height: 24px; }
-.kp-tray-pin svg { width: 14px; height: 14px; }
-.kp-launcher { flex: none; box-sizing: border-box; width: 48px; height: 48px; padding: 0; display: flex; align-items: center;
+.kp-tray-mini { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.kp-tray-mini .kp-tray-btn { width: 24px; height: 24px; }
+.kp-tray-mini .kp-tray-btn svg { width: 14px; height: 14px; }
+.kp-launcher { position: relative; flex: none; box-sizing: border-box; width: 48px; height: 48px; padding: 0; display: flex; align-items: center;
     justify-content: center; border-radius: 50%; border: 2px solid var(--kp-border-strong); background: var(--kp-bg); color: var(--kp-fg);
     cursor: pointer; box-shadow: var(--kp-shadow); }
 .kp-launcher:hover { background: var(--kp-bg-hover); }
 .kp-launcher svg { width: 32px; height: 32px; fill: currentColor; pointer-events: none; }
 .kp-launcher.kp-on { border-color: var(--kp-accent); color: var(--kp-accent); }
 .kp-launcher.kp-latched { background: var(--kp-accent); border-color: var(--kp-accent); color: var(--kp-accent-fg); }
+
+/* A short text in the corner of a button: a hotkey, or the launcher's state. */
+.kp-tray-key, .kp-launcher-label { position: absolute; right: -4px; bottom: -4px; box-sizing: border-box; height: 14px; padding: 0 4px;
+    border-radius: 7px; border: 1px solid var(--kp-border-strong); background: var(--kp-bg); color: var(--kp-muted);
+    font: bold 9px/12px Consolas, 'Courier New', monospace; pointer-events: none; }
+.kp-tray-btn.kp-on .kp-tray-key, .kp-launcher.kp-on .kp-launcher-label { color: var(--kp-accent); border-color: var(--kp-accent); }
+.kp-tray-mini .kp-tray-key { display: none; }
+.kp-bar .kp-tray-key { position: static; }
 
 /* ---- Edge bar: a taskbar along one screen edge ---- */
 .kp-bar { position: fixed; z-index: var(--kp-z-max); box-sizing: border-box; display: flex; gap: 4px; padding: 4px;
@@ -44,7 +53,5 @@
 .kp-tray-label { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
 
 /* ---- Dormant launcher: the overlay is off; only a dimmed launcher is left ---- */
-.kp-tray.kp-dormant { gap: 6px; opacity: 0.5; transition: opacity 0.15s ease; }
+.kp-tray.kp-dormant { opacity: 0.5; transition: opacity 0.15s ease; }
 .kp-tray.kp-dormant:hover { opacity: 1; }
-.kp-dormant-label { padding: 2px 8px; border-radius: var(--kp-radius); background: var(--kp-bg); color: var(--kp-muted); font: var(--kp-font);
-    pointer-events: none; }

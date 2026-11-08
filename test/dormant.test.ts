@@ -15,7 +15,7 @@ describe( 'dormant launcher', () => {
         const dock = root.querySelector( '.kp-tray.kp-dormant' );
         expect( dock?.classList.contains( 'kp-corner-top' ) ).toBe( true );
         expect( dock?.classList.contains( 'kp-corner-left' ) ).toBe( true );
-        expect( root.querySelector( '.kp-dormant-label' )?.textContent ).toBe( 'Debug off' );
+        expect( root.querySelector( '.kp-launcher-label' )?.textContent ).toBe( 'Debug off' );
         expect( root.querySelector( '.kp-panel' ) ).toBeNull();
         expect( root.querySelectorAll( 'button' ) ).toHaveLength( 1 );
     } );
@@ -24,7 +24,7 @@ describe( 'dormant launcher', () => {
         launcher = createDormantLauncher( { onWake: vi.fn() } );
         expect( launcher.host.hasAttribute( 'data-kp-overlay' ) ).toBe( true );
         expect( launcher.host.shadowRoot!.querySelector( 'style' )?.textContent ).toContain( '.kp-dormant' );
-        expect( launcher.host.shadowRoot!.querySelector( '.kp-dormant-label' )?.textContent ).toBe( 'Off' );
+        expect( launcher.host.shadowRoot!.querySelector( '.kp-launcher-label' )?.textContent ).toBe( 'Off' );
     } );
 
     it( 'calls onWake on click, and the caller can swap it for a live overlay', () => {

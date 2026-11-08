@@ -4,7 +4,7 @@ import type { Theme } from './styles';
 import type { Corner } from './tray/corner-dock';
 
 export interface DormantOptions {
-    /** Shown next to the launcher. Default: 'Off'. */
+    /** Shown in the corner of the launcher. Default: 'Off'. */
     label?: string;
     /** Tooltip of the launcher. Default: the label. */
     title?: string;
@@ -44,9 +44,9 @@ export function createDormantLauncher( options: DormantOptions ): DormantLaunche
     launcher.type = 'button';
     launcher.className = 'kp-launcher';
     launcher.title = options.title ?? label;
-    launcher.append( svgIcon( options.icon ?? ICON_POWER ) );
+    launcher.append( svgIcon( options.icon ?? ICON_POWER ), span( 'kp-launcher-label', label ) );
     launcher.onclick = () => options.onWake();
-    dock.append( launcher, span( 'kp-dormant-label', label ) );
+    dock.append( launcher );
     root.append( dock );
 
     return { host, dispose: () => host.remove() };

@@ -4,6 +4,7 @@ import type { Overlay } from '../overlay';
 import type { PanelPersistence } from '../persistence/panel-persistence';
 import type { TrayItem } from '../tray/tray';
 import type { AnyPos, DockSide, PanelChange, PanelSize, PanelState } from '../types';
+import { keyLabel } from '../tray/tray-button';
 import { renderHeader } from './header';
 import { dragPanel, nearPoint, placePanel } from './movable';
 import type { PanelContext, PanelDefinition, PanelHandle, PanelHooks } from './panel-definition';
@@ -433,7 +434,7 @@ export function createPanelController( def: PanelDefinition, env: ControllerEnv 
         needsRefresh: () => state === 'open' || previewing || ( state === 'minimized' && !!hooks.isActive?.() ),
         refresh: () => guard( id, 'refresh', () => hooks.refresh?.() ),
         inTray: def.tray !== false,
-        trayItem: () => ( { id, title, icon: def.icon, badge, state, active: !!hooks.isActive?.() } ),
+        trayItem: () => ( { id, title, icon: def.icon, badge, state, hotkey: def.hotkey && keyLabel( def.hotkey ), active: !!hooks.isActive?.() } ),
         dispose() {
             if ( disposed ) {
                 return;

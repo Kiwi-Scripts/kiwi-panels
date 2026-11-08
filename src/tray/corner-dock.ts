@@ -1,4 +1,4 @@
-import { div, svgIcon } from '../dom/h';
+import { div, span, svgIcon } from '../dom/h';
 import type { Tray, TrayActions, TrayItem } from './tray';
 import { createCommandButton, createTrayButton, syncTrayButtons, type TrayButton } from './tray-button';
 
@@ -51,16 +51,21 @@ export function cornerDock( options: CornerDockOptions = {} ): Tray {
             pin.title = 'Keep the tray open';
             pin.append( svgIcon( ICON_PIN ) );
             pin.onclick = () => toggle();
-            // The panel buttons are synced into a wrapper, so that the pin button stays first and the commands last.
+            // Pin and commands are small and share a column, to keep the row short. The panel buttons are synced into a wrapper.
+            const mini = div( 'kp-tray-mini' );
+            mini.append( pin, ...( tray.commands ?? [] ).map( createCommandButton ) );
             list = div( 'kp-tray-list' );
             list.style.display = 'contents';
-            inner.append( pin, list, ...( tray.commands ?? [] ).map( createCommandButton ) );
+            inner.append( mini, list );
 
             launcher = document.createElement( 'button' );
             launcher.type = 'button';
             launcher.className = 'kp-launcher';
             launcher.title = 'Panels';
             launcher.append( svgIcon( options.icon ?? ICON_GRID ) );
+            if ( tray.modifier ) {
+                launcher.append( span( 'kp-launcher-label', tray.modifier ) );
+            }
             launcher.onclick = actions?.launcher ?? ( () => toggle() );
 
             items.append( inner );

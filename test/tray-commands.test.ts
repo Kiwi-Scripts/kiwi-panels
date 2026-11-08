@@ -9,13 +9,13 @@ const panel = ( id: string ) => ( { id, title: `Panel ${id}`, mount: () => docum
 const power = ( onClick = vi.fn() ) => ( { id: 'power', title: 'Turn off', icon: 'M0 0h24v24H0z', onClick } );
 
 describe( 'tray commands', () => {
-    it( 'adds buttons to the corner dock after the panel buttons', () => {
+    it( 'stacks the buttons with the pin button in the corner dock', () => {
         const onClick = vi.fn();
         overlay = createOverlay( { storage: false, tray: cornerDock(), trayCommands: [power( onClick )] } );
         overlay.register( panel( 'a' ) );
         overlay.register( panel( 'b' ) );
         const ids = Array.from( overlay.root.querySelectorAll<HTMLElement>( '.kp-tray-inner button' ), b => b.dataset.panel ?? b.dataset.command ?? 'pin' );
-        expect( ids ).toEqual( ['pin', 'a', 'b', 'power'] );
+        expect( ids ).toEqual( ['pin', 'power', 'a', 'b'] );
         overlay.root.querySelector<HTMLElement>( '[data-command="power"]' )?.click();
         expect( onClick ).toHaveBeenCalledTimes( 1 );
     } );
@@ -55,5 +55,21 @@ describe( 'corner dock tray hotkey', () => {
         overlay = createOverlay( { storage: false, tray: cornerDock( { trayHotkey: null } ), hotkeys: { modifier: 'Alt' } } );
         press();
         expect( overlay.root.querySelector( '.kp-tray' )?.classList.contains( 'kp-tray-pinned' ) ).toBe( false );
+    } );
+} );
+
+describe( 'tray labels', () => {
+    it( 'shows the modifier key on the launcher and the hotkey on a panel button', () => {
+        overlay = createOverlay( { storage: false, tray: cornerDock(), hotkeys: { modifier: 'Control' } } );
+        overlay.register( { ...panel( 'a' ), hotkey: 'KeyI' } );
+        expect( overlay.root.querySelector( '.kp-launcher-label' )?.textContent ).toBe( 'Ctrl' );
+        const key = overlay.root.querySelector<HTMLElement>( '[data-panel="a"] .kp-tray-key' );
+        expect( key?.textContent ).toBe( 'I' );
+        expect( key?.style.display ).toBe( '' );
+    } );
+
+    it( 'shows a label on a command button', () => {
+        overlay = createOverlay( { storage: false, tray: cornerDock(), trayCommands: [{ ...power(), label: 'X' }] } );
+        expect( overlay.root.querySelector( '[data-command="power"] .kp-tray-key' )?.textContent ).toBe( 'X' );
     } );
 } );
